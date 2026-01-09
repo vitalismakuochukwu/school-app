@@ -176,13 +176,14 @@ const onPaystackSuccess = async (reference) => {
 
   try {
     const paymentData = {
-      // Use email as a backup if regNo is missing
-      email: student.email, 
-      regNo: student.regNo,
+      email: student?.email, 
+      regNo: student?.regNo,
       level: selectedLevel?.level || "100L", 
       amountPaid: schoolFeeAmount, 
       reference: reference.reference 
     };
+
+    console.log("Sending payment data to backend:", paymentData);
 
     const response = await fetch('https://school-fees-backend.onrender.com/api/fees/mark-as-paid', {
       method: 'POST',
@@ -190,19 +191,20 @@ const onPaystackSuccess = async (reference) => {
       body: JSON.stringify(paymentData)
     });
 
+    const result = await response.json();
+
     if (response.ok) {
-      // SUCCESS: Force move to the dashboard tab and reload
-      alert("Payment Recorded Successfully!");
+      alert("🎉 Payment Recorded Successfully!");
       setActiveTab('dashboard'); 
       window.location.reload(); 
     } else {
-      const errorData = await response.json();
-      setIsPaymentLoading(false); // STOP THE LOADING SCREEN SO YOU CAN SEE THE ERROR
-      alert("Backend Error: " + errorData.message);
+      setIsPaymentLoading(false); 
+      alert("Backend Refused: " + (result.message || "Unknown Error"));
     }
   } catch (error) {
-    setIsPaymentLoading(false); // STOP THE LOADING SCREEN
-    alert("Network error. Your reference is: " + reference.reference);
+    setIsPaymentLoading(false); 
+    console.error("Fetch Error:", error);
+    alert("Network Error: Could not reach the server. Please save your reference: " + reference.reference);
   }
 };
   // --- AUTO-TRIGGER PAYMENT EFFECT ---
