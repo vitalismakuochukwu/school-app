@@ -172,40 +172,37 @@ const Dashboard = () => {
 //   }
 // };
 const onPaystackSuccess = async (reference) => {
-  // 1. Show the "Verifying" green screen
   setIsPaymentLoading(true); 
 
   try {
-    // 2. Prepare the data to send to the backend
     const paymentData = {
-      regNo: student.regNo, // Taken from your profile
-      level: selectedLevel?.level, // e.g., "100L"
+      // Use email as a backup if regNo is missing
+      email: student.email, 
+      regNo: student.regNo,
+      level: selectedLevel?.level || "100L", 
       amountPaid: schoolFeeAmount, 
-      reference: reference.reference // The code Paystack just gave you
+      reference: reference.reference 
     };
 
-    // 3. The FETCH call (The Bridge)
     const response = await fetch('https://school-fees-backend.onrender.com/api/fees/mark-as-paid', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(paymentData)
     });
 
-    // 4. Check if the server said "OK"
     if (response.ok) {
-      // Reload the page so the "Paid" badge and Receipt appear
+      // SUCCESS: Force move to the dashboard tab and reload
+      alert("Payment Recorded Successfully!");
+      setActiveTab('dashboard'); 
       window.location.reload(); 
     } else {
       const errorData = await response.json();
-      alert("Server Error: " + errorData.message);
+      setIsPaymentLoading(false); // STOP THE LOADING SCREEN SO YOU CAN SEE THE ERROR
+      alert("Backend Error: " + errorData.message);
     }
   } catch (error) {
-    // This runs if the internet fails or the server is down
-    console.error("Connection failed:", error);
-    alert("Connection lost, but your payment was successful. Please refresh the page manually.");
-  } finally {
-    // 5. ALWAYS remove the loading screen, even if there was an error
-    setIsPaymentLoading(false);
+    setIsPaymentLoading(false); // STOP THE LOADING SCREEN
+    alert("Network error. Your reference is: " + reference.reference);
   }
 };
   // --- AUTO-TRIGGER PAYMENT EFFECT ---
@@ -287,11 +284,10 @@ const onPaystackSuccess = async (reference) => {
   };
 
   const handleSignOut = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = 'https://school-fees-backend.onrender.com/logout';
-  };
-
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  navigate('/login'); // This uses your React Router to go back to login safely
+};
   // Helper to check if a level is paid
   const isLevelPaid = (levelCode) => {
     // Assuming student.paymentHistory exists or we check against a fetched history list
