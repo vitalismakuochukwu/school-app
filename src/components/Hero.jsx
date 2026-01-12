@@ -6,7 +6,7 @@ const Hero = () => {
   return (
     <section 
       id="hero" 
-      className="relative py-32 px-6 text-center bg-yellow-400"
+      className="relative py-32 px-6 text-center bg-yellow-600"
       style={{ 
         backgroundImage: `url(${futoBg})`, 
         backgroundSize: 'cover', 
@@ -34,7 +34,7 @@ const Hero = () => {
         <p className="text-xl md:text-2xl text-yellow-100 mb-10 font-medium drop-shadow-md">
           Seamless School Fees Payment | The Official Digital Payment Platform
         </p>
-        <Link to="/login" className="bg-yellow-500 text-white px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-yellow-600 transition transform hover:-translate-y-1 border-2 border-white">
+        <Link to="/login" className="bg-gray-900 text-yellow-500 px-8 py-4 rounded-lg font-bold text-lg shadow-lg hover:bg-gray-800 transition transform hover:-translate-y-1 border-2 border-yellow-500">
           Pay Fees Now
         </Link>
       </div>

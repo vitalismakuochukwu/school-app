@@ -1,6 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <footer className="bg-gray-900 text-gray-300 py-12 font-sans">
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
@@ -18,10 +21,10 @@ const Footer = () => {
         <div>
           <h3 className="text-white text-lg font-bold mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href="#hero" className="hover:text-yellow-500 transition">Home</a></li>
-            <li><a href="#about" className="hover:text-yellow-500 transition">About Us</a></li>
-            <li><a href="#services" className="hover:text-yellow-500 transition">Services</a></li>
-            <li><a href="#contact" className="hover:text-yellow-500 transition">Contact Support</a></li>
+            <li><Link to="/" className="hover:text-yellow-500 transition">Home</Link></li>
+            <li><Link to="/about" className="hover:text-yellow-500 transition">About Us</Link></li>
+            <li><Link to="/services" className="hover:text-yellow-500 transition">Services</Link></li>
+            <li><Link to="/contact" className="hover:text-yellow-500 transition">Contact Support</Link></li>
           </ul>
         </div>
 
@@ -39,7 +42,7 @@ const Footer = () => {
             </li>
             <li className="flex items-center gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-              <span>+234 803 123 4567</span>
+              <span>+234 702 613 9914</span>
             </li>
             <li className="flex items-center gap-3">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -78,6 +81,72 @@ const Footer = () => {
           <a href="mailto:helpdesk@futo.edu.ng" className="bg-yellow-500 p-2 rounded-full hover:bg-yellow-600 transition text-white shadow-lg" title="Contact Support">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
           </a>
+        </div>
+      </div>
+
+      {/* Floating Message Icon */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+        {/* Popover Content */}
+        {isOpen && (
+          <div className="mb-4 bg-white rounded-2xl shadow-2xl border border-yellow-500 w-72 overflow-hidden animate-fade-in-up transform origin-bottom-right">
+            <div className="bg-gray-900 p-4 flex justify-between items-center">
+              <h3 className="text-yellow-500 font-bold text-lg">Support Center</h3>
+              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <p className="text-sm text-gray-600 mb-2">Need assistance? Reach out to us directly.</p>
+              
+              <a href="mailto:helpdesk@futo.edu.ng" className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-yellow-50 border border-gray-100 hover:border-yellow-200 transition group">
+                <div className="bg-yellow-100 p-2 rounded-full text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                </div>
+                <div>
+                  <p className="font-bold text-gray-800 text-sm">Send Email</p>
+                  <p className="text-xs text-gray-500">helpdesk@futo.edu.ng</p>
+                </div>
+              </a>
+
+              <a href="tel:+2347026139914" className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-yellow-50 border border-gray-100 hover:border-yellow-200 transition group">
+                <div className="bg-yellow-100 p-2 rounded-full text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                </div>
+                <div>
+                  <p className="font-bold text-gray-800 text-sm">Call Support</p>
+                  <p className="text-xs text-gray-500">+234 702 613 9914</p>
+                </div>
+              </a>
+            </div>
+            <div className="bg-gray-50 p-3 text-center border-t border-gray-100">
+              <Link to="/contact" onClick={() => setIsOpen(false)} className="text-xs font-bold text-yellow-600 hover:text-yellow-700 uppercase tracking-wide">
+                Open Full Contact Form
+              </Link>
+            </div>
+          </div>
+        )}
+
+        <div className="relative group">
+          {!isOpen && (
+            <span className="absolute right-full mr-4 top-1/2 -translate-y-1/2 bg-gray-900 text-yellow-500 text-xs font-bold px-3 py-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none border border-yellow-500">
+              Chat with us
+            </span>
+          )}
+          
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="relative bg-yellow-500 text-gray-900 p-4 rounded-full shadow-2xl hover:bg-yellow-400 transition transform hover:-translate-y-1 border-2 border-white flex items-center justify-center focus:outline-none"
+          >
+            {!isOpen && <span className="absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75 animate-ping"></span>}
+            
+            {isOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+            )}
+          </button>
         </div>
       </div>
     </footer>

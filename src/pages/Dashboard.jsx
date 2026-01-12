@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [selectedLevel, setSelectedLevel] = useState(null); // Track which level is being paid for
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [startPayment, setStartPayment] = useState(false); // Trigger for auto-payment
+  const [showLoaderClose, setShowLoaderClose] = useState(false); // Safety valve for stuck loader
   const navigate = useNavigate();
 
   // 1. FETCH CURRENT FEE FROM BACKEND
@@ -81,64 +82,68 @@ const Dashboard = () => {
 
   const initializePayment = usePaystackPayment(config);
 
-  // --- UNIVERSAL AUTH LOGIC: BRIDGING MANUAL & GOOGLE ---
-  useEffect(() => {
-    const checkUserAuth = async () => {
-      const token = localStorage.getItem('token');
+  // --- FETCH STUDENT PROFILE FUNCTION ---
+  const fetchStudentProfile = async () => {
+    const token = localStorage.getItem('token');
 
-      if (token) {
-        try {
-          // Using /api/student/profile as it supports Bearer token auth
-          // const response = await fetch('https://school-fees-backend.onrender.com/api/student/profile', {
-          //   headers: {
-          //     'Authorization': `Bearer ${token}`,
-          //     'Content-Type': 'application/json'
-          //   }
-          // });
-          const response = await fetch('https://school-fees-backend.onrender.com/api/student/profile', {
-           method: 'GET',
-          headers: {
-         'Authorization': `Bearer ${token}`,
-         'Content-Type': 'application/json'
-          },
-           credentials: 'include' // Add this line!
-            });
-          if (response.ok) {
-            const data = await response.json();
-            setStudent(data);
-            setFormData(data);
-            return;
-          }
-        } catch (err) {
-          console.error("Token auth failed", err);
-        }
-      }
-
+    if (token) {
       try {
-        const sessionResponse = await fetch('https://school-fees-backend.onrender.com/api/auth/me', {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
+        const response = await fetch('https://school-fees-backend.onrender.com/api/student/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         });
-
-        if (sessionResponse.ok) {
-          const sessionData = await sessionResponse.json();
-          setStudent(sessionData);
-          setFormData(sessionData);
-          localStorage.setItem('user', JSON.stringify(sessionData));
-          if (sessionData.token) {
-            localStorage.setItem('token', sessionData.token);
-          }
-        } else {
-          navigate('/login');
+        if (response.ok) {
+          const data = await response.json();
+          setStudent(data);
+          setFormData(data);
+          return;
         }
-      } catch (error) {
-        console.error("Session check failed", error);
+      } catch (err) {
+        console.error("Token auth failed", err);
+      }
+    }
+
+    try {
+      const sessionResponse = await fetch('https://school-fees-backend.onrender.com/api/auth/me', {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (sessionResponse.ok) {
+        const sessionData = await sessionResponse.json();
+        setStudent(sessionData);
+        setFormData(sessionData);
+        localStorage.setItem('user', JSON.stringify(sessionData));
+        if (sessionData.token) {
+          localStorage.setItem('token', sessionData.token);
+        }
+      } else {
         navigate('/login');
       }
-    };
+    } catch (error) {
+      console.error("Session check failed", error);
+      navigate('/login');
+    }
+  };
 
-    checkUserAuth();
+  // --- UNIVERSAL AUTH LOGIC: BRIDGING MANUAL & GOOGLE ---
+  useEffect(() => {
+    fetchStudentProfile();
   }, [navigate]);
+
+  // --- SAFETY VALVE FOR STUCK LOADER ---
+  useEffect(() => {
+    let timer;
+    if (isPaymentLoading) {
+      setShowLoaderClose(false);
+      timer = setTimeout(() => setShowLoaderClose(true), 10000); // Show force close after 10s
+    }
+    return () => clearTimeout(timer);
+  }, [isPaymentLoading]);
 
  // Payment Handlers
 //   const onPaystackSuccess = async (reference) => {
@@ -196,7 +201,8 @@ const onPaystackSuccess = async (reference) => {
     if (response.ok) {
       alert("🎉 Payment Recorded Successfully!");
       setActiveTab('dashboard'); 
-      window.location.reload(); 
+      await fetchStudentProfile(); // Refresh data without reload to avoid 404
+      setIsPaymentLoading(false);
     } else {
       setIsPaymentLoading(false); 
       alert("Backend Refused: " + (result.message || "Unknown Error"));
@@ -220,7 +226,7 @@ const onPaystackSuccess = async (reference) => {
         () => { 
           setIsPaymentLoading(false); 
           setGeneratedRRR(null); // Reset on cancel so user can try again
-          alert("Transaction Cancelled"); 
+          setTimeout(() => alert("Transaction Cancelled"), 100); // Delay alert to allow state update
         }
       );
       setStartPayment(false);
@@ -307,39 +313,39 @@ const onPaystackSuccess = async (reference) => {
         }
       `}</style>
       {/* Sidebar */}
-      <aside className={`w-64 bg-green-800 text-white fixed inset-y-0 left-0 flex flex-col shadow-lg transition-transform duration-300 z-50 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="p-5 text-center bg-green-900 border-b border-green-700 flex justify-between items-center md:block">
-          <h2 className="text-xl font-bold">FUTO PAY</h2>
-          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white"><FaTimes /></button>
+      <aside className={`w-64 bg-gray-900 text-white fixed inset-y-0 left-0 flex flex-col shadow-lg transition-transform duration-300 z-50 border-r border-yellow-500 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="p-5 text-center bg-gray-900 border-b border-yellow-500 flex justify-between items-center md:block">
+          <h2 className="text-xl font-bold text-yellow-500">FUTO PAY</h2>
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-yellow-500"><FaTimes /></button>
         </div>
 
-        <div className="p-4 border-b border-green-700 text-center">
-          <div className="w-16 h-16 bg-white rounded-full mx-auto mb-2 flex items-center justify-center text-green-800 font-bold text-2xl">
+        <div className="p-4 border-b border-yellow-500 text-center">
+          <div className="w-16 h-16 bg-yellow-500 rounded-full mx-auto mb-2 flex items-center justify-center text-gray-900 font-bold text-2xl">
             {student?.fullName?.charAt(0) || 'S'}
           </div>
-          <p className="text-sm font-semibold truncate">{student?.fullName || 'Student'}</p>
+          <p className="text-sm font-semibold truncate text-yellow-100">{student?.fullName || 'Student'}</p>
         </div>
 
         <ul className="list-none p-0 m-0 flex-1 overflow-y-auto">
           <li>
-            <button onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} className={`w-full flex items-center py-4 px-5 ${activeTab === 'dashboard' ? 'bg-yellow-400 text-green-900 font-semibold' : 'text-green-100 hover:bg-green-700'}`}>
+            <button onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} className={`w-full flex items-center py-4 px-5 ${activeTab === 'dashboard' ? 'bg-yellow-500 text-gray-900 font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-yellow-500'}`}>
               <FaTachometerAlt className="mr-3" /> Dashboard
             </button>
           </li>
           <li>
-            <button onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }} className={`w-full flex items-center py-4 px-5 ${activeTab === 'profile' ? 'bg-yellow-400 text-green-900 font-semibold' : 'text-green-100 hover:bg-green-700'}`}>
+            <button onClick={() => { setActiveTab('profile'); setIsSidebarOpen(false); }} className={`w-full flex items-center py-4 px-5 ${activeTab === 'profile' ? 'bg-yellow-500 text-gray-900 font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-yellow-500'}`}>
               <FaUsers className="mr-3" /> Profile
             </button>
           </li>
           <li>
-            <button onClick={() => { setActiveTab('fees'); setIsSidebarOpen(false); }} className={`w-full flex items-center py-4 px-5 ${activeTab === 'fees' ? 'bg-yellow-400 text-green-900 font-semibold' : 'text-green-100 hover:bg-green-700'}`}>
+            <button onClick={() => { setActiveTab('fees'); setIsSidebarOpen(false); }} className={`w-full flex items-center py-4 px-5 ${activeTab === 'fees' ? 'bg-yellow-500 text-gray-900 font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-yellow-500'}`}>
               <FaCreditCard className="mr-3" /> School Fees
             </button>
           </li>
         </ul>
 
-        <div className="p-4 border-t border-green-700">
-          <button onClick={handleSignOut} className="w-full flex items-center py-2 px-3 text-green-100 hover:bg-green-700 rounded transition">
+        <div className="p-4 border-t border-yellow-500">
+          <button onClick={handleSignOut} className="w-full flex items-center py-2 px-3 text-gray-300 hover:bg-gray-800 hover:text-yellow-500 rounded transition">
             <FaSignOutAlt className="mr-3" /> Logout
           </button>
         </div>
@@ -348,7 +354,7 @@ const onPaystackSuccess = async (reference) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col md:ml-64 min-h-screen">
         {/* Mobile Header */}
-        <div className="md:hidden bg-green-800 text-white p-4 flex justify-between items-center shadow-md">
+        <div className="md:hidden bg-gray-900 text-yellow-500 p-4 flex justify-between items-center shadow-md border-b border-yellow-500">
           <span className="font-bold text-lg">FUTO PAY</span>
           <button onClick={() => setIsSidebarOpen(true)}><FaBars className="text-xl" /></button>
         </div>
@@ -452,6 +458,11 @@ const onPaystackSuccess = async (reference) => {
           <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
           <h2 className="text-xl font-bold">Verifying Transaction...</h2>
           <p className="text-green-100">Please do not refresh or close this page.</p>
+          {showLoaderClose && (
+            <button onClick={() => setIsPaymentLoading(false)} className="mt-6 bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 shadow-lg transition">
+              Force Close
+            </button>
+          )}
         </div>
       )}
       <div className="grid gap-4">
